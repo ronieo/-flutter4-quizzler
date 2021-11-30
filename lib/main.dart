@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'quize_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
-void main() => runApp(Quizzler());
+QuizBrain quizBrain = QuizBrain();
+
+void main() => runApp (Quizzler());
 
 class Quizzler extends StatelessWidget {
   @override
@@ -25,6 +29,34 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+
+  List<Icon> scoreKeeper = [];
+
+  void checkAnswer (bool userPickedAnswer) {
+    bool correctAnswers = quizBrain.getCorretAnswer();
+    setState(() {
+      if(quizBrain.isFinishied() == true) {
+        Alert(
+            context: context,
+            title: "FINISHIED!",
+            desc: "The Problems are Finished!").show();
+        quizBrain.reset();
+        scoreKeeper = [];
+      } else if(userPickedAnswer == correctAnswers) {
+        scoreKeeper.add(Icon(
+          Icons.check, color: Colors.green,
+        ));
+        print('user got it right');
+      } else {
+        scoreKeeper.add(Icon(
+          Icons.close, color: Colors.red,
+        ));
+        print('user got it wrong');
+      }
+      quizBrain.nextQuestion();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -37,7 +69,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                quizBrain.getQuestionText(), //questions.first is also possible
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -50,41 +82,48 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              textColor: Colors.white,
+            child: Container(
               color: Colors.green,
-              child: Text(
-                'True',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
+              child: TextButton(
+                child: Text(
+                  'True',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.0,
+                  ),
                 ),
+                onPressed: () {
+                  //The user picked true.
+                  checkAnswer(true);
+                },
               ),
-              onPressed: () {
-                //The user picked true.
-              },
             ),
           ),
         ),
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15.0),
-            child: FlatButton(
+            child: Container(
               color: Colors.red,
-              child: Text(
-                'False',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  color: Colors.white,
+              child: TextButton(
+                child: Text(
+                  'False',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.white,
+                  ),
                 ),
+                onPressed: () {
+                  //The user picked false.
+                  checkAnswer(false);
+                },
               ),
-              onPressed: () {
-                //The user picked false.
-              },
             ),
           ),
         ),
-        //TODO: Add a Row here as your score keeper
+        Row(
+          children: scoreKeeper,
+        )
       ],
     );
   }
